@@ -80,4 +80,42 @@ category_index =  label_map_util.create_categories_from_labelmap( PATH_TO_LABELS
 print(category_index)
 
 ## 비디오 실행해보기 ?
-import c
+import cv2
+import numpy as np 
+import pandas as pd 
+
+cap =  cv2.VideoCapture(0)
+
+while True :
+
+    ret, image_np =  cap.read()
+    #( 1, x, x, 3 ) 이렇게 만든다
+    image_np_expended = np.expand_dims( image_np, axis= 0 )
+
+    input_tensor = tf.convert_to_tensor( np.expand_dims( image_np , 0 ), dtype=tf.float32 )
+    detections, predictions_dict, shapes = detect_fn( input_tensor ) 
+    
+
+    # mscoco_label_map.pbtxt 파일을 보면, id 가 1부터 시작하니까 offset을 1로 만들어 준다
+    label_id_offset = 1
+
+    image_np_with_detections = image_np.copy()
+
+    viz_utils.visualize_boxes_and_labels_on_image_array(
+        image_np_with_detections,
+        detections['detection_boxes'][0].numpy(),
+        ( dections['detection_class'][0].numpy() + label_id_offset ).astype(int),
+        detections['detection_scores'][0].numpy() ,
+        category_index,
+        use_normalized_coordinates= True,
+        max_boxes_to_draw = 200,
+        min_score_thresh = 0.6,
+        agnostic_mode = False
+
+
+    )
+
+    # cv2.imshow( "object detection", image_np_with_detections )
+
+    # 관제시스템의 경우 디스플레이 크면 거기에 밎게 조절해서 보여주도록 하는 코드
+    # cv2.imshow("object detection", cv2.resize(image_np_with_detections, (800,600)))
